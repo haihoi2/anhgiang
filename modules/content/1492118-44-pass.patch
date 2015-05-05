@@ -1,0 +1,147 @@
+diff --git a/tests/workbench_moderation.perms.test b/tests/workbench_moderation.perms.test
+new file mode 100644
+index 0000000..fd43b25
+--- /dev/null
++++ b/tests/workbench_moderation.perms.test
+@@ -0,0 +1,82 @@
++<?php
++
++/**
++ * @file
++ * Permissions-related tests for workbench_moderation.module.
++ */
++
++class WorkbenchModerationPermsTestCase extends DrupalWebTestCase {
++  protected $content_type;
++  protected $editor_user;
++  protected $author_user;
++
++  function setUp($modules = array()) {
++    $modules = array_merge($modules, array('workbench_moderation'));
++    parent::setUp($modules);
++
++    // Create a new content type and enable moderation on it.
++    $type = $this->drupalCreateContentType();
++    $this->content_type = $type->name;
++    variable_set('node_options_' . $this->content_type, array('revision', 'moderation'));
++// The editor should be able to view all unpublished content, even without authoring perms.
++    $editor_permissions = array(
++      0 => 'view all unpublished content',
++    );
++    $this->editor_user = $this->drupalCreateUser($editor_permissions);
++// The Author will create the content.
++    $author_permissions = array(
++      0 => 'create ' . $type->name . ' content',
++    );
++    $this->author_user = $this->drupalCreateUser($author_permissions);
++  }
++}
++
++class WorkbenchModerationViewUnpublishedTestCase extends WorkbenchModerationPermsTestCase {
++
++  public static function getInfo() {
++    return array(
++      'name' => 'View all unpublished content',
++      'description' => 'Create a user who can view unpublished content. Create a node and leave it unpublished. Try to view it.',
++      'group' => 'Workbench Moderation',
++    );
++  }
++
++  function setUp($modules = array()) {
++    parent::setUp($modules);
++    $this->drupalLogin($this->author_user);
++  }
++
++  function testViewUnpublished() {
++    $is_moderated = workbench_moderation_node_type_moderated($this->content_type);
++    $this->assertTrue($is_moderated, t('The content type is moderated.'));
++
++    // Create a new node and make sure it is unpublished.
++    $body_name = 'body[' . LANGUAGE_NONE . '][0]';
++    $edit = array(
++      'title' => $this->randomName(),
++      "{$body_name}[value]" => $this->randomString(128),
++      "{$body_name}[format]" => filter_default_format(),
++    );
++    $this->drupalPost("node/add/{$this->content_type}", $edit, t('Save'));
++
++    // Get the new node.
++    $node = $this->drupalGetNodeByTitle($edit['title']);
++
++    $this->assertFalse($node->status, t('New node is unpublished'));
++    $this->assertTrue(isset($node->workbench_moderation), t('Workbench moderation information is present on the node object'));
++    $this->assertFalse(isset($node->workbench_moderation['published']), t('Workbench moderation has no published revision'));
++    $this->assertEqual($node->uid, $this->author_user->uid, 'This node was authored by the author user.');
++    $this->verbose(print_r($this->loggedInUser, TRUE));
++
++    $this->drupalLogin($this->editor_user);
++    global $user;
++    $user = user_load($this->loggedInUser->uid);
++    $this->drupalGet($node->path['source']);
++    $this->assertFalse($node->status, t('This node is unpublished.'));
++    $this->assertResponse(200);
++    $this->assertFalse($node->uid == $this->loggedInUser->uid, t('The current user is not the author of this node.'));
++    $this->assertEqual($user->uid, $this->loggedInUser->uid, 'The current global user is the same as the logged in user.');
++    $this->assertEqual($user->uid, $this->editor_user->uid, 'The current user is the editor user.');
++    $this->assertTrue(user_access('view all unpublished content'), 'Current user has permission to view all unpublished content');
++  }
++}
+diff --git a/workbench_moderation.module b/workbench_moderation.module
+index 6c7d5ed..e210e0d 100644
+--- a/workbench_moderation.module
++++ b/workbench_moderation.module
+@@ -447,6 +447,45 @@ function workbench_moderation_node_access($node, $op, $account) {
+ }
+ 
+ /**
++ * Implements hook_node_grants().
++ *
++ * We associated role IDs with the 'view all unpublished content' permission with
++ * the workbench_moderation realm in the node_access table. Here, we return the
++ * role ID values associated with the user.
++ */
++function workbench_moderation_node_grants($user, $op) {
++  $grants['workbench_moderation'] = array_keys($user->roles);
++  return $grants;
++}
++
++/**
++ * Implements hook_node_access_records().
++ *
++ * This function supplies the workbench moderation grants for unpublished
++ * content. workbench_moderation adds the 'view all unpublished content'
++ * permission so it captures and returns the role IDs which include that
++ * permission.
++ */
++function workbench_moderation_node_access_records($node) {
++  if ($node->status) {
++    // It's published, default handling is okay.
++    return;
++  }
++  $result = db_query("SELECT rid FROM {role_permission} WHERE permission = 'view all unpublished content'");
++  foreach ($result as $grant) {
++    $grants[] = array(
++      'realm' => 'workbench_moderation',
++      'gid' => $grant->rid,
++      'grant_view' => 1,
++      'grant_update' => 0,
++      'grant_delete' => 0,
++      'priority' => 0,
++    );
++  }
++  return !empty($grants) ? $grants : array();
++}
++
++/**
+  * Custom access handler for node operations.
+  *
+  * @param $op
+@@ -670,7 +709,7 @@ function workbench_moderation_node_update($node) {
+ 
+   // Don't proceed if moderation is not enabled on this content, or if
+   // we're replacing an already-published revision.
+-  if (!workbench_moderation_node_moderated($node) || 
++  if (!workbench_moderation_node_moderated($node) ||
+       !empty($node->workbench_moderation['updating_live_revision'])) {
+     return;
+   }

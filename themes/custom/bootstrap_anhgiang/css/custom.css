@@ -1,0 +1,9 @@
+.bxslider-one-item .bx-wrapper .bx-controls{
+    display: none;
+}
+section.block-lahalle-core .corporate a{
+    z-index: 999;
+}
+.not-logged-in .tooltip{
+    display: none !important;
+}

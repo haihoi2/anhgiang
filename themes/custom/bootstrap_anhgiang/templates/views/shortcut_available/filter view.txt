@@ -1,0 +1,7 @@
+$filter = views_get_view_result('profile_shorcuts', 'block_left_navigation');
+$out_results = '0';
+foreach ($filter as $vresult) {
+  $out_results .= ',' . $vresult->field_field_profile_shorcut_id[0]['raw']['value'];
+}
+
+return $out_results;

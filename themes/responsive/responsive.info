@@ -1,0 +1,28 @@
+name = Anh Giang Responsive
+description = Anh Giang Responsive.
+core = 7.x
+engine = phptemplate
+
+stylesheets[all][] = css/bootstrap.min.css
+stylesheets[all][] = css/font-awesome.min.css
+stylesheets[all][] = css/animate.css
+stylesheets[all][] = css/main.css
+stylesheets[all][] = css/slicknav.css
+ 
+scripts[] = js/jquery-1.10.2.min.js
+scripts[] = js/bootstrap.min.js
+scripts[] = js/jquery.slicknav.min.js
+   
+regions[menu_main] = Menu main
+regions[banner] = Banner
+regions[lang] = Language bar
+regions[menu_left] = Menu left
+regions[content] = Content
+regions[footer] = Footer
+
+
+; Information added by drupal.org packaging script on 2015-01-25
+version = "0.1"
+core = "7.x"
+project = "anh giang responsive"
+datestamp = "1343505412"

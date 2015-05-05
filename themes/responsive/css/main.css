@@ -1,0 +1,77 @@
+@charset "utf-8";
+/* CSS Document */
+body 		{margin:0;padding:0;font-family:Arial;font-size:12px;line-height:20px;color:#333;background-image:url(../images/bg.gif)}
+p			{margin-top:0px;}
+form		{margin:0;padding:0;display:inline;}
+input, select, textarea {font-family:Arial;font-size:12px;color:#666666;padding:2px;}
+a 			{color:#0056ff;text-decoration:none}
+a:hover, a:focus 	{color:#FF0000;text-decoration: none;}
+a img		{border:none;}
+
+h1, h2, h3 {padding:0px; margin:0px;font-weight:normal;}
+h1	{font-size:18px;color:#333;text-transform:uppercase;font-weight:normal;padding-top:15px}
+
+.header		{width:100%;}
+.content	{width:970px;margin-left:auto;margin-right:auto;clear:both;}
+.title		{height:48px;  border-bottom: 1px solid #b78f03;margin: 0 30px;}
+.main-content{background-color:#ffffff;margin-bottom:60px;}
+.menu{background-color:#830009;}
+.menu_text 	{color:#FFFFFF;line-height:42px;font-weight:bold;text-transform:uppercase;height:42px;text-align:right}
+	.menu_text .active{color:#FF0!important}
+	.menu_text a {color:#FFFFFF;margin-right:25px}
+	.menu_text a:hover {color:#FFFF00}	
+
+.logo{min-height:100px;background-color:#FFF}	
+.logo img{width:100%;}
+
+.banner{  width: 100%;background: #CCC;float: left;padding: 0;}
+
+#date_time{float:left;color:#FFF;line-height:31px;padding-left:30px}
+
+.lang{float:right;padding-right:10px;color:#FFF;line-height:31px}
+.lang ul{padding:0;margin:0; float:left;}
+.lang li{float:left; padding: 0 5px;list-style:none;}
+
+.row{margin:0; padding:30px;}
+.post-grid{text-align:center;}
+.post-thumb img {width: 90%;height:auto;}
+.footer{padding:15px 0 25px 0;text-align:center;}
+.readmore{padding-top:10px;}
+.readmore img{margin-right:5px;}
+.listitem{margin:0;padding:0 0 30px 0;}
+.listitem li{list-style:none;border-bottom:1px solid #CCC;padding: 7px 0px 5px 13px;background:url(../images/icon.gif) no-repeat left center;}
+.listitem li .active{font-weight:bold;color:#F00}
+.chat{padding:10px;text-align:center;border:1px solid #b78f03;}
+.right-menu{padding-top:20px;}
+.teaser .left{padding-left:0;}
+.teaser .right{padding-right:0;}
+.teaser .right img{width:100%;height:auto;}
+
+
+#bttop{position:fixed;bottom:35px;right:35px;cursor:pointer;display:none;}
+#menu {
+	  display: none;
+	}
+.container-small {
+    max-width: 100%;
+}
+@media (min-width: 768px) {
+    .container-small {
+        width: 750px;
+    }
+}
+@media (min-width: 992px) {
+    .container-small {
+        width: 750px;
+    }
+	
+	.slicknav_menu{
+		display:none;
+	}
+}
+@media (min-width: 1200px) {
+    .container-small {
+        width: 970px;
+    }
+}
+

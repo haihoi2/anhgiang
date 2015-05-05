@@ -1,0 +1,13 @@
+diff --git a/workbench_moderation.module b/workbench_moderation.module
+index f510e2e..3a7d796 100644
+--- a/workbench_moderation.module
++++ b/workbench_moderation.module
+@@ -1191,7 +1191,7 @@ function workbench_moderation_node_current_load($node) {
+ function workbench_moderation_node_live_load($node) {
+   // Is there a live revision of this node?
+   if (isset($node->workbench_moderation['published']->vid)) {
+-    return node_load($node->nid, $node->workbench_moderation['published']->vid, TRUE);
++    return node_load($node->nid, $node->workbench_moderation['published']->vid);
+   }
+ }
+ 

@@ -1,0 +1,25 @@
+@media print {
+  .header {
+  	display: none !important;
+    height: 0px !important;
+  }     
+  .content-right.col-2 {
+  	float: none;
+  	margin: 0 auto;
+  }
+  a[href]:after {
+    content: none !important; 
+  }
+  .two-col{
+    padding-top: 0px;
+  }
+  .content .breadcrumbs, 
+  .nav-tabs, 
+  .content 
+  .tools-page, 
+  .footer, 
+  .content-left, 
+  .block-lahalle-news-sheet {
+    display: none !important; 
+  }
+}

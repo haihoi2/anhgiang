@@ -1,0 +1,162 @@
+diff --git a/admin_menu.module b/admin_menu.module
+index b97cb90..79a7051 100644
+--- a/admin_menu.module
++++ b/admin_menu.module
+@@ -685,26 +685,56 @@ function admin_menu_translated_menu_link_alter(&$item, $map) {
+ /**
+  * Implements hook_flush_caches().
+  *
+- * Flush client-side caches.
++ * Flushes client-side caches.
++ *
++ * @param int $uid
++ *   (optional) A user ID to limit the cache flush to.
+  */
+-function admin_menu_flush_caches() {
++function admin_menu_flush_caches($uid = NULL) {
++  $cid = 'admin_menu:';
++  if (isset($uid)) {
++    $cid .= $uid . ':';
++  }
+   // Flush cached output of admin_menu.
+-  cache_clear_all('admin_menu:', 'cache_menu', TRUE);
++  cache_clear_all($cid, 'cache_menu', TRUE);
+   // Flush client-side cache hashes.
+   drupal_static_reset('admin_menu_cache_get');
+   // db_table_exists() required for SimpleTest.
+   if (db_table_exists('cache_admin_menu')) {
+-    cache_clear_all('*', 'cache_admin_menu', TRUE);
++    cache_clear_all(isset($uid) ? $cid : '*', 'cache_admin_menu', TRUE);
+   }
+ }
+ 
+ /**
+- * Implements hook_form_FORM_ID_alter().
+- *
+- * Form submit handler to flush client-side cache hashes when clean URLs are toggled.
++ * Implements hook_form_alter().
++ */
++function admin_menu_form_alter(&$form, &$form_state, $form_id) {
++  $global_flush_ids = array(
++    // Update links for clean/non-clean URLs.
++    'system_clean_url_settings' => 1,
++    // Incorporate changed user permissions.
++    'user_admin_permissions' => 1,
++    // Removing a role potentially means less permissions.
++    'user_admin_role_delete_confirm' => 1,
++    // User name and roles may be changed on the user account form.
++    'user_profile_form' => 1,
++  );
++  if (isset($global_flush_ids[$form_id])) {
++    $form['#submit'][] = 'admin_menu_form_alter_flush_cache_submit';
++  }
++
++  // Optionally limit the cache flush to a certain user ID.
++  $form_state['admin_menu_uid'] = NULL;
++  if ($form_id == 'user_profile_form') {
++    $form_state['admin_menu_uid'] = $form_state['user']->uid;
++  }
++}
++
++/**
++ * Form submission handler to flush Administration menu caches.
+  */
+-function admin_menu_form_system_clean_url_settings_alter(&$form, $form_state) {
+-  $form['#submit'][] = 'admin_menu_flush_caches';
++function admin_menu_form_alter_flush_cache_submit($form, &$form_state) {
++  admin_menu_flush_caches($form_state['admin_menu_uid']);
+ }
+ 
+ /**
+@@ -713,6 +743,6 @@ function admin_menu_form_system_clean_url_settings_alter(&$form, $form_state) {
+  * Extends Devel module with Administration menu developer settings.
+  */
+ function admin_menu_form_devel_admin_settings_alter(&$form, &$form_state) {
+-  module_load_include('inc', 'admin_menu');
++  form_load_include($form_state, 'inc', 'admin_menu');
+   _admin_menu_form_devel_admin_settings_alter($form, $form_state);
+ }
+diff --git a/tests/admin_menu.test b/tests/admin_menu.test
+index 714e497..4fbd657 100644
+--- a/tests/admin_menu.test
++++ b/tests/admin_menu.test
+@@ -123,13 +123,15 @@ class AdminMenuPermissionsTestCase extends AdminMenuWebTestCase {
+   }
+ 
+   function setUp() {
+-    parent::setUp(array('node', 'contact'));
++    parent::setUp(array('node'));
+   }
+ 
+   /**
+    * Test that the links are added to the page (no JS testing).
+    */
+   function testPermissions() {
++    module_enable(array('contact'));
++
+     // Anonymous users should not see the menu.
+     $this->drupalGet('');
+     $this->assertNoElementByXPath('//div[@id="admin-menu"]', array(), t('Administration menu not found.'));
+@@ -194,6 +196,62 @@ class AdminMenuPermissionsTestCase extends AdminMenuWebTestCase {
+     $this->assertNoLinkTrailByTitle(array(t('Configuration'), t('Media')));
+     $this->assertNoLinkTrailByTitle(array(t('Configuration'), t('System')));
+   }
++
++  /**
++   * Tests that user role and permission changes are properly taken up.
++   */
++  function testPermissionChanges() {
++    // Create a user who is able to change permissions.
++    $permissions = $this->basePermissions + array(
++      'administer permissions',
++    );
++    $admin_user = $this->drupalCreateUser($permissions);
++    $this->drupalLogin($admin_user);
++
++    // Extract the user role ID that was created for above permissions.
++    $rid = key(array_diff_key($admin_user->roles, array(DRUPAL_AUTHENTICATED_RID => 0)));
++
++    // Verify that Configuration does not appear.
++    $this->assertNoLinkTrailByTitle(array(t('Configuration')));
++    // Grant the 'administer site configuration' permission to ourselves.
++    $edit = array(
++      $rid . '[administer site configuration]' => TRUE,
++    );
++    $this->drupalPost('admin/people/permissions', $edit, t('Save permissions'));
++    // Verify that Configuration appears.
++    $this->assertLinkTrailByTitle(array(t('Configuration')));
++
++    // Verify that Structure » Content types does not appear.
++    $this->assertNoLinkTrailByTitle(array(t('Structure'), t('Content types')));
++    // Create a new role.
++    $edit = array(
++      'name' => 'test',
++    );
++    $this->drupalPost('admin/people/permissions/roles', $edit, t('Add role'));
++    // It should be safe to assume that the new role gets the next ID.
++    $test_rid = $rid + 1;
++    // Grant the 'administer content types' permission for the role.
++    $edit = array(
++      $test_rid . '[administer content types]' => TRUE,
++    );
++    $this->drupalPost('admin/people/permissions/' . $test_rid, $edit, t('Save permissions'));
++    // Verify that Structure » Content types does not appear.
++    $this->assertNoLinkTrailByTitle(array(t('Structure'), t('Content types')));
++
++    // Assign the role to ourselves.
++    $edit = array(
++      'roles[' . $test_rid . ']' => TRUE,
++    );
++    $this->drupalPost('user/' . $admin_user->uid . '/edit', $edit, t('Save'));
++    // Verify that Structure » Content types appears.
++    $this->assertLinkTrailByTitle(array(t('Structure'), t('Content types')));
++
++    // Delete the role.
++    $this->drupalPost('admin/people/permissions/roles/edit/' . $test_rid, array(), t('Delete role'));
++    $this->drupalPost(NULL, array(), t('Delete'));
++    // Verify that Structure » Content types does not appear.
++    $this->assertNoLinkTrailByTitle(array(t('Structure'), t('Content types')));
++  }
+ }
+ 
+ /**
