@@ -1,0 +1,11 @@
+; 
+name = Anh Giang Project Authorization
+description = Anh Giang Project Authorization module.
+core = 7.x
+project ="anhgiang"
+;
+;
+package = LaHalle
+dependencies[] = views
+dependencies[] = workbench_access
+files[] = anhgiang.variable.inc

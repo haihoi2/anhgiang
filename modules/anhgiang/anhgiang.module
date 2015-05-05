@@ -1,0 +1,160 @@
+<?php
+define('ANHGIANG_ACCESS', 'ANHGIANG_ACCESS');
+define('ANHGIANG_FULLRIGHT_SID', 0);
+
+/**
+ * Implements hook_help().
+ *
+ * Displays help and module information.
+ */
+function anhgiang_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#anhgiang":
+      return '<p>' . t("Anh Giang website costum module") . '</p>';
+      break;
+  }
+} 
+/**
+ * Implements hook_permission().
+ */
+function anhgiang_permission() {
+  return array(
+    'download anhgiang pages' => array(
+      'title' => t('Download anhgiang pages and  articles'),
+      'description' => t('Allow to download anhgiang pages and articles.'),
+    ),
+    'print anhgiang pages' => array(
+      'title' => t('Print: pages and articles'),
+      'description' => t('Can use print.css for pages.'),
+    ),
+    'download anhgiang media file' => array(
+      'title' => t('Download media in pages and articles'),
+      'description' => t('Download media in pages and articles.'),
+    ),
+  );
+}
+/**
+ * Implements hook_node_access_records().
+ */
+function anhgiang_node_access_records($node) {
+
+  $tree = workbench_access_get_active_tree();
+  if (empty($tree['active'])) {
+    return array();
+  }
+  
+  // If disabled for this content type, do nothing.
+  if (!is_object($node)) {
+    $type = $node;
+  }
+  else {
+    $type = $node->type;
+  }
+  if (!variable_get('workbench_access_node_type_' . $type, 1)) {
+    return array();
+  }
+  
+  if (!is_array($node->workbench_access)) {
+    $node->workbench_access = array($node->workbench_access);
+  }
+  // build grant sections
+  $sids = array();
+  foreach($node->workbench_access as $tid) {  
+    if ('right_section' != $tid) {
+      if (array_key_exists($tid,$tree['active'])) {
+        $sids[$tid] = $tid;
+        while ($tree['tree'][$tid]['parent'] != $tid){
+          $tid = $tree['tree'][$tid]['parent'];
+          if ('right_section' != $tid) {
+            if (array_key_exists($tid,$tree['active'])) {
+              $sids[$tid] = $tid;
+            }
+          }
+        }
+      }
+    }
+  }
+  $sids[ANHGIANG_FULLRIGHT_SID] = ANHGIANG_FULLRIGHT_SID; 
+  if (empty($sids)) {
+    return array();
+  }
+  foreach ($sids as $sid => $val) {
+    $grants[] = array (
+      'realm' => ANHGIANG_ACCESS,
+      'gid' => $sid,
+      'grant_view' => 1,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+      'priority' => 0,
+    );
+  }
+
+  return !empty($grants) ? $grants : array();
+}
+
+/**
+ * Implements hook_node_grants().
+ */
+function anhgiang_node_grants($account, $op) {
+  // Now check the user account.
+  if (!isset($account->workbench_access)) {
+    $account = user_load($account->uid);
+  }
+  
+  if (empty($account->workbench_access))
+  {
+    return array();
+  }
+  
+  $sids = array_keys($account->workbench_access);
+ 
+  foreach ($sids as $sid) {
+    // determine if the user is a member of this section
+    if ('right_section' == $sid) {
+      $sid = ANHGIANG_FULLRIGHT_SID;        
+    }
+    $grants[ANHGIANG_ACCESS][$sid] = $sid;
+  }
+
+  return !empty($grants) ? $grants : array(); 
+}
+/**
+ * Implements hook_node_form_alter().
+ */
+function anhgiang_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['#node']) && $form['#node']->type .'_node_form' === $form_id) {
+    // Is node form.
+    
+  }   
+}
+
+/**
+ * Implements hook_menu().
+ */
+function anhgiang_menu() {
+  $items = array();
+//TODO: add anhgiang menu
+  return $items;
+}
+
+
+/**
+ * helper function to get all translated nodeid.
+ */
+function anhgiang_get_translated_nids($nids = array(), $language = 'fr') {
+  $tnids = array();
+  foreach ($nids as $nid) {
+    $node = node_load($nid);
+    if ($node) {
+      $translations = translation_node_get_translations($node->tnid);        
+      if (isset($translations[$language])) {
+        $tnids[] = $translations[$language]->nid;
+      }
+      elseif ($node->language == $language){
+        $tnids[] = $node->nid;
+      }
+    }
+  }
+  return $tnids; 
+}
+ 
