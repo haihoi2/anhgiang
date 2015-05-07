@@ -2,6 +2,28 @@
 define('ANHGIANG_ACCESS', 'ANHGIANG_ACCESS');
 define('ANHGIANG_FULLRIGHT_SID', 0);
 
+function anhgiang_system_info_alter(&$info, $file, $type) {
+  if ($type == 'module' && $file->name == 'profile') {
+    $info['hidden'] = FALSE;
+  }
+}
+
+/**
+ * Implements hook_init().
+ *
+ */
+function anhgiang_init() {
+  global $user, $base_url;
+  
+  if ($user->uid > 0 && !user_access('access administration menu')) { // User logined
+    drupal_add_css(drupal_get_path('module', 'anhgiang') . '/css/admin_menu.css');
+    drupal_add_css(drupal_get_path('module', 'anhgiang') . '/css/admin_menu_toolbar.css');
+    drupal_add_js(drupal_get_path('module', 'anhgiang') . '/js/admin_menu.js');
+    drupal_add_js(drupal_get_path('module', 'anhgiang') . '/js/admin_menu_toolbar.js');
+  
+  }
+  
+}
 /**
  * Implements hook_help().
  *
@@ -60,12 +82,12 @@ function anhgiang_node_access_records($node) {
   // build grant sections
   $sids = array();
   foreach($node->workbench_access as $tid) {  
-    if ('right_section' != $tid) {
+    if ('project' != $tid) {
       if (array_key_exists($tid,$tree['active'])) {
         $sids[$tid] = $tid;
         while ($tree['tree'][$tid]['parent'] != $tid){
           $tid = $tree['tree'][$tid]['parent'];
-          if ('right_section' != $tid) {
+          if ('project' != $tid) {
             if (array_key_exists($tid,$tree['active'])) {
               $sids[$tid] = $tid;
             }
@@ -110,7 +132,7 @@ function anhgiang_node_grants($account, $op) {
  
   foreach ($sids as $sid) {
     // determine if the user is a member of this section
-    if ('right_section' == $sid) {
+    if ('project' == $sid) {
       $sid = ANHGIANG_FULLRIGHT_SID;        
     }
     $grants[ANHGIANG_ACCESS][$sid] = $sid;
@@ -133,10 +155,18 @@ function anhgiang_form_alter(&$form, &$form_state, $form_id) {
  */
 function anhgiang_menu() {
   $items = array();
-//TODO: add anhgiang menu
+  $items['page-404'] = array(
+    'page callback' => 'anhgiang_page_not_found',
+    'access arguments' => array('access content'),
+    'access callback' => true,
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
-
+function anhgiang_page_not_found() {
+  return '';
+}
 
 /**
  * helper function to get all translated nodeid.

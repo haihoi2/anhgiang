@@ -8,28 +8,28 @@ function bootstrap_anhgiang_theme() {
   
   $items['user_login_block'] = array(
     'render element' => 'form',
-    'path' => drupal_get_path('theme', 'bootstrap_lahalle') . '/templates',
+    'path' => drupal_get_path('theme', 'bootstrap_anhgiang') . '/templates',
     'template' => 'user-login',
     'preprocess functions' => array(
-       'bootstrap_lahalle_preprocess_user_login'
+       'bootstrap_anhgiang_preprocess_user_login'
     ),
   );
   
   $items['user_login'] = array(
     'render element' => 'form',
-    'path' => drupal_get_path('theme', 'bootstrap_lahalle') . '/templates',
+    'path' => drupal_get_path('theme', 'bootstrap_anhgiang') . '/templates',
     'template' => 'user-login',
     'preprocess functions' => array(
-       'bootstrap_lahalle_preprocess_user_login'
+       'bootstrap_anhgiang_preprocess_user_login'
     ),
   );
   
   $items['user_profile_form'] = array(
     'render element' => 'form',
-    'path' => drupal_get_path('theme', 'bootstrap_lahalle') . '/templates',
+    'path' => drupal_get_path('theme', 'bootstrap_anhgiang') . '/templates',
     'template' => 'user-profile',
     'preprocess functions' => array(
-       'bootstrap_lahalle_preprocess_user_profile'
+       'bootstrap_anhgiang_preprocess_user_profile'
     ),
   );
   
@@ -139,7 +139,7 @@ function bootstrap_anhgiang_preprocess_page(&$vars) {
     // unset title
     $vars['title'] = '';
     // unset node in front page
-    $vars['page']['content']['system_main'] = array();
+    //$vars['page']['content']['system_main'] = array();
     //dpm($vars);
   }                                           
   //unset title for login page
