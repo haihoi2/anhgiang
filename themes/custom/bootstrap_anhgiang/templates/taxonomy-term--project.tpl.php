@@ -45,94 +45,123 @@
 ?>
 <div id="taxonomy-term-<?php print $term->tid; ?>" class="<?php print $classes; ?>">
 
-  <?php if (!$page): ?>
-    <h2><a href="<?php print $term_url; ?>"><?php print $term_name; ?></a></h2>
-  <?php endif; ?>
+    <h2 class="title-node"><?php print $term_name; ?></h2>
 
-  <div class="content">
-    <?php       
-      print render($content); 
-    ?>
-  </div>
+  
+  
   <?php if ($user->uid != 0) :?>
-  <div class="note">
-    <div class="column1">
-      <h2> 
-        <?php 
-        $options = array('language' => $language, 'default' => t('Thông báo gửi đến'));
-        $variable = variable_build('anhgiang_note_alert', $options);
-        print variable_get_value($variable, $options); 
-        ?>
-      </h2>
-      <?php $view = views_get_view_result('notes_of_project', 'block_alert_user', $term->tid);
-            $result = count($view);
-          if ($result) print views_embed_view('notes_of_project', 'block_alert_user', $term->tid);
-          else print t("Không có thông báo nào");
-      ?>
-    </div>
-    <div class="column2">
-      <h2> 
-        <?php           
-          $options = array('language' => $language, 'default' => t('Thông báo của tôi'));
-          $variable = variable_build('anhgiang_note_user', $options);
-          print variable_get_value($variable, $options); 
-        ?>
-      </h2>
-      <?php $view = views_get_view_result('notes_of_project', 'block', $term->tid);
-          $result = count($view);
-          if ($result) print views_embed_view('notes_of_project', 'block', $term->tid);
-          else print t("Không có thông báo nào");          
-      ?>
-    </div>
-  </div>
-  <div class="task">
-    <div class="column1">
-      <h2>       
-      <?php           
-          $options = array('language' => $language, 'default' => t('Công việc của tôi'));
-          $variable = variable_build('anhgiang_task_user', $options);
-          print variable_get_value($variable, $options); 
-      ?>
-      </h2>
-      <?php    
-          $view = views_get_view_result('tasks_of_project', 'block', $term->tid);
-          $result = count($view);
-          if ($result) print views_embed_view('tasks_of_project', 'block', $term->tid); 
-          else print t("Không có công việc nào"); 
-      ?>
-    </div>
-    <div class="column2">
-      <h2> 
-      <?php           
-          $options = array('language' => $language, 'default' => t('Tất cả công việc của dự án'));
-          $variable = variable_build('anhgiang_task_all', $options);
-          print variable_get_value($variable, $options); 
-      ?>
-      </h2>
-      <?php   $view = views_get_view_result('tasks_of_project', 'block_all_task', $term->tid);
-          $result = count($view);
-          if ($result) print views_embed_view('tasks_of_project', 'block_all_task', $term->tid);  
-          else print t("Không có công việc nào"); 
-      ?>
-    </div>
-  </div>
-  <div class="report">
-    <div class="column1">
-      <h2> <?php print t("Báo cáo tôi tạo"); ?></h2>
-      <?php    $view = views_get_view_result('tasks_of_project', 'block_user_report', $term->tid);
-          $result = count($view);
-          if ($result) print views_embed_view('tasks_of_project', 'block_user_report', $term->tid); 
-          else print t("Không có báo cáo nào"); 
-      ?>
-    </div>
-    <div class="column2">
-      <h2> <?php print t("Tất cả báo cáo dự án"); ?></h2>
-      <?php    $view = views_get_view_result('tasks_of_project', 'block_all_report', $term->tid);
-          $result = count($view);
-          if ($result) print views_embed_view('tasks_of_project', 'block_all_report', $term->tid); 
-          else print t("Không có báo cáo nào"); 
-      ?>
-    </div>
-  </div>
+  <ul class="nav nav-tabs" id="manage">
+      <li class="active"><a data-toggle="tab" href="#note"><?php print t('Thông báo'); ?></a></li>
+      <li><a data-toggle="tab" href="#task"><?php print t('Công việc'); ?></a></li>
+      <li><a data-toggle="tab" href="#report"><?php print t('Báo cáo'); ?></a></li>
+  </ul>
+  
+  <div class="tab-main">
+    <div class="tab-content col-md-12">
+          <div id="note" class="tab-pane fade in active">
+              <div class="note col-md-12">
+                  <div class="column1 col-md-6 col-sm-12">
+                    <h4> 
+                      <?php 
+                      $options = array('language' => $language, 'default' => t('Thông báo gửi đến'));
+                      $variable = variable_build('anhgiang_note_alert', $options);
+                      print variable_get_value($variable, $options); 
+                      ?>
+                    </h4>
+                    <?php $view = views_get_view_result('notes_of_project', 'block_alert_user', $term->tid);
+                          $result = count($view);
+                        if ($result) print views_embed_view('notes_of_project', 'block_alert_user', $term->tid);
+                        else print t("Không có thông báo nào");
+                    ?>
+                  </div>
+                  <div class="column2 col-md-6 col-sm-12">
+                    <h4> 
+                      <?php           
+                        $options = array('language' => $language, 'default' => t('Thông báo của tôi'));
+                        $variable = variable_build('anhgiang_note_user', $options);
+                        print variable_get_value($variable, $options); 
+                      ?>
+                    </h4>
+                    <?php $view = views_get_view_result('notes_of_project', 'block', $term->tid);
+                        $result = count($view);
+                        if ($result) print views_embed_view('notes_of_project', 'block', $term->tid);
+                        else print t("Không có thông báo nào");          
+                    ?>
+                  </div>
+             </div>
+          </div>
+          
+          <div id="task" class="tab-pane fade">
+              <div class="task col-md-12">
+                  <div class="column1 col-md-6 col-sm-12">
+                    <h4>       
+                    <?php           
+                        $options = array('language' => $language, 'default' => t('Công việc của tôi'));
+                        $variable = variable_build('anhgiang_task_user', $options);
+                        print variable_get_value($variable, $options); 
+                    ?>
+                    </h4>
+                    <?php    
+                        $view = views_get_view_result('tasks_of_project', 'block', $term->tid);
+                        $result = count($view);
+                        if ($result) print views_embed_view('tasks_of_project', 'block', $term->tid); 
+                        else print t("Không có công việc nào"); 
+                    ?>
+                  </div>
+                  <div class="column2 col-md-6 col-sm-12">
+                    <h4> 
+                    <?php           
+                        $options = array('language' => $language, 'default' => t('Tất cả công việc của dự án'));
+                        $variable = variable_build('anhgiang_task_all', $options);
+                        print variable_get_value($variable, $options); 
+                    ?>
+                    </h4>
+                    <?php   $view = views_get_view_result('tasks_of_project', 'block_all_task', $term->tid);
+                        $result = count($view);
+                        if ($result) print views_embed_view('tasks_of_project', 'block_all_task', $term->tid);  
+                        else print t("Không có công việc nào"); 
+                    ?>
+                  </div>
+              </div>
+          </div>
+          
+          <div id="report" class="tab-pane fade">
+              <div class="report col-md-12">
+                  <div class="column1 col-md-6 col-sm-12">
+                    <h4> <?php print t("Báo cáo tôi tạo"); ?></h4>
+                    <?php    $view = views_get_view_result('tasks_of_project', 'block_user_report', $term->tid);
+                        $result = count($view);
+                        if ($result) print views_embed_view('tasks_of_project', 'block_user_report', $term->tid); 
+                        else print t("Không có báo cáo nào"); 
+                    ?>
+                  </div>
+                  <div class="column2 col-md-6 col-sm-12">
+                    <h4> <?php print t("Tất cả báo cáo dự án"); ?></h4>
+                    <?php    $view = views_get_view_result('tasks_of_project', 'block_all_report', $term->tid);
+                        $result = count($view);
+                        if ($result) print views_embed_view('tasks_of_project', 'block_all_report', $term->tid); 
+                        else print t("Không có báo cáo nào"); 
+                    ?>
+                  </div>
+             </div>
+          </div>
+     </div>
+    </div> 
+      
+      
+   
   <?php endif; ?>
+  
+  <div class="project">
+        <?php       
+       		print render($content['description']); 
+        ?>
+  </div>
+
 </div>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+    $("#manage li:eq(1) a").tab('show');
+});
+</script>

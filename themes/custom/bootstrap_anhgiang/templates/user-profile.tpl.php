@@ -38,7 +38,7 @@
 
 ?>
 <div class="profile">  
-    <h2 class="title"> <?php print t("Xin chào ").strtoupper($user->name);?> </h2>
+    <h2 class="title-node"> <?php print t("Xin chào ").strtoupper($user->name);?> </h2>
     <div class="form-club">
       <?php print render($form['account']['mail']); ?>
       <div class="clearfix"></div>
@@ -58,13 +58,13 @@
     </div>
     <?php if (module_exists('anhgiang')): ?>
       <div class="note">
-      <h2> 
+      <h4> 
         <?php 
         $options = array('language' => $language, 'default' => t('Thông báo gửi đến'));
         $variable = variable_build('anhgiang_note_alert', $options);
         print variable_get_value($variable, $options); 
         ?>
-      </h2>
+      </h4>
       <?php $view = views_get_view_result('notes_of_project', 'block_alert_user_all');
             $result = count($view);
           if ($result) print views_embed_view('notes_of_project', 'block_alert_user_all');

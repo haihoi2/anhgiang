@@ -24,7 +24,7 @@
 	$Pic = '';
 	$Title = '';
 	?>
-<div class="title"><h1>Các dự án mới nhất</h1></div>
+<div class="title" style="margin-top:20px;"><h1>Các dự án mới nhất</h1></div>
 		
 <div class="row">            
 <?php $iRow =0;?>

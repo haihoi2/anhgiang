@@ -204,6 +204,10 @@ function bootstrap_anhgiang_bootstrap_search_form_wrapper($variables) {
   return $output;
 }
 
+function bootstrap_anhgiang_menu_tree__menu_project_menu($variables){
+  return '<ul class="listitem">' . $variables['tree'] . '</ul>';
+}
+
 
 bootstrap_include('bootstrap_lahalle', 'theme/block.inc');
 bootstrap_include('bootstrap_lahalle', 'theme/form.inc');

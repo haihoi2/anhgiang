@@ -8,15 +8,18 @@ base theme = bootstrap
 ;; Regions
 ;;;;;;;;;;;;;;;;;;;;;
 ;;regions[usermenu]       = 'User Menu'
-;;regions[header]         = 'Header'
 ;;regions[highlighted]    = 'Highlighted'
 ;;regions[help]           = 'Help'
-;;regions[content]        = 'Content'
-;;regions[sidebar_first]  = 'Sidebar First'
-;;regions[footer]         = 'Footer'
 ;;regions[page_top]       = 'Page top'
 ;;regions[page_bottom]    = 'Page bottom'
-
+;;regions[header]         = 'Header'
+regions[menu]         = 'Menu'
+regions[language]       = 'Language'
+regions[banner]    		= 'Banner'
+regions[title_page]         = 'Title page'
+regions[sidebar_first]  = 'Sidebar First'
+regions[content]        = 'Content'
+regions[footer]         = 'Footer'
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Stylesheets
@@ -24,7 +27,8 @@ base theme = bootstrap
 
 stylesheets[all][] = css/bootstrap.css
 stylesheets[all][] = css/normalize.css
-stylesheets[all][] = css/style.css      
+stylesheets[all][] = css/style.css   
+stylesheets[all][] = css/custom.css   
 
 ; For information on choosing the desired method, please read the Drupal
 ; Bootstrap sub-theme "how-to" documentation:

@@ -93,151 +93,110 @@
                  
             </div>
         </div>
-    </div>
-    
-   
+    </div>  
     
     <div class="menu">
        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-                  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                  </button>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
       	  
-              <div class="navbar-collapse collapse container container-small menu_text">
-                <nav role="navigation">
-                 	<?php print render($page['menu']); ?>
-                </nav>
-              </div>
-            
-      
+      <div class="navbar-collapse collapse container container-small menu_text">
+        <nav role="navigation">
+            <?php print render($page['menu']); ?>
+        </nav>
+      </div>     
     </div>
 
-    <!-- start slideshow -->
-    
+    <!-- start slideshow -->    
     <div class="banner">
-            <?php echo render($page['banner']); ?>          
-    </div>
-    
+        <?php echo render($page['banner']); ?>          
+    </div>    
     <!-- stop slideshow -->
 
-    <div class="container container-small" style="clear:both;height:300px">
-    </div>
-
-    <div class="container container-small" style="height:31px;background-color:#830009">
-        <div id="date_time">
-            <?php echo date("l, F d, Y h:i" ,time()); ?>
-        </div>
-
-        <div class="lang">            	          
-            <?php echo render($page['language']); ?>               
-        </div>
-    
-    </div>
 </div><!----header--->
 
 <div class="main-container container container-small">
 
-  <header role="banner" id="page-header">
-    <?php print render($page['header']); ?>
-  </header> <!-- /#page-header -->
-
-  
-	<div class="container container-small main-content" >
-	<?php if(drupal_is_front_page()){?>
-	 
-    	  <?php if (!empty($breadcrumb)): print $breadcrumb; endif;?>
-            <a id="main-content"></a>
-          <?php print render($title_prefix); ?>
-          
-          <?php if (!empty($title)): ?>
-            <h1 class="page-header"><?php print $title; ?></h1>
-          <?php endif; ?>
-          
-          <?php print render($title_suffix); ?>
-          
-          <?php print $messages; ?>
-          
-          <?php if (!empty($tabs)): ?>
-            <?php print render($tabs); ?>
-          <?php endif; ?>
-          
-          <?php if (!empty($page['help'])): ?>
-            <?php print render($page['help']); ?>
-          <?php endif; ?>
-          
-          <?php if (!empty($action_links)): ?>
-            <ul class="action-links"><?php print render($action_links); ?></ul>
-          <?php endif; ?>
-          
-          <?php print render($page['content']); ?>
-     
-   <?php } else {?>
-   
-   		<div class="row">
-		  <?php if (!empty($breadcrumb)): print $breadcrumb; endif;?>
-            <a id="main-content"></a>
-          <?php print render($title_prefix); ?>
-          
-          <?php print $messages; ?>
-          
-          <?php if (!empty($tabs)): ?>
-            <?php print render($tabs); ?>
-          <?php endif; ?>
-          
-          <?php if (!empty($page['help'])): ?>
-            <?php print render($page['help']); ?>
-          <?php endif; ?>
-          
-          <?php if (!empty($action_links)): ?>
-            <ul class="action-links"><?php print render($action_links); ?></ul>
-          <?php endif; ?>
-          
-          <?php if (!empty($title)): ?>
-            <div class="title"><h1><?php print $title; ?></h1></div>
-          <?php endif; ?>
-          
-          <?php print render($title_suffix); ?>
-          
-          
-          
-          
-          	<?php if (!empty($page['sidebar_first'])): ?>
-              <aside class="left-menu col-md-3 col-sm-12" role="complementary">
-                <?php print render($page['sidebar_first']); ?>
-              </aside>  <!-- /#sidebar-first -->
-            <?php endif; ?>
-            
-            <section<?php print $content_column_class; ?> >    
-			  <?php print render($page['content']); ?>
-            </section>
-
-			<?php if (!empty($page['sidebar_second'])): ?>
-              <aside class="col-sm-3" role="complementary">
-                <?php print render($page['sidebar_second']); ?>
-              </aside>  <!-- /#sidebar-second -->
-            <?php endif; ?> </div> <?php } ?>
-         
+	<div class="row">
+        <div class="top-menu">
+            <div id="date_time">
+                <?php echo date("l, F d, Y h:i" ,time()); ?>
+            </div>
+    
+            <div class="lang">            	          
+                <?php echo render($page['language']); ?>               
+            </div>   
+       </div>
+    </div>
+    
+    <div class="row">
+        <div class="main-content" >
+				<div class="title-page">
+                	<?php print $messages; ?>
+                	<?php print render($page['title_page']); ?>
+                </div>
+                
+                <?php if (!empty($page['sidebar_first'])): ?>
+                  <aside class="left-menu col-md-3 col-sm-12" role="complementary"> 
+                    <?php print render($page['sidebar_first']); ?>
+                  </aside>  <!-- /#sidebar-first -->
+                <?php endif; ?>
+                
+                <section<?php print $content_column_class; ?> >
+                  <?php if (!empty($breadcrumb)): print $breadcrumb; endif;?>
+                        <a id="main-content"></a>
+                      <?php print render($title_prefix); ?>
+                      
+                      <?php if (!empty($tabs)): ?>
+                        <?php print render($tabs); ?>
+                      <?php endif; ?> 
+                      
+                      <?php if (!empty($page['help'])): ?>
+                        <?php print render($page['help']); ?>
+                      <?php endif; ?>
+                      
+                      <?php if (!empty($action_links)): ?>
+                        <ul class="action-links"><?php print render($action_links); ?></ul>
+                      <?php endif; ?>
+                      
+                      <?php print render($title_suffix); ?>    
+                  <?php print render($page['content']); ?>
+                </section>
+    
+                <?php if (!empty($page['sidebar_second'])): ?>
+                  <aside class="col-sm-3" role="complementary">
+                    <?php print render($page['sidebar_second']); ?>
+                  </aside>  <!-- /#sidebar-second -->
+                <?php endif; ?>
        
-    
-
-    
-	
-    
-        <div class="footer">       	
-              2014 © Bản quyền thuộc về Công ty Anh Giang.
         </div>
-	</div> 
+      </div>
+        
+      <div class="row">
+          <div class="footer">       	
+                2014 © Bản quyền thuộc về Công ty Anh Giang.
+                <?php print render($page['footer']); ?>
+          </div>
+      </div> 
+        
+  
 
   
 </div>
 
 <script type="text/javascript">
 
-$(function() {
-$(".banner #flexslider-1").addClass("container")
-});
+;(function($){
+    $(".banner #flexslider-1").addClass("container container-small");
+	$('.flexslider').flexslider({
+		controlNav: false
+	  });
+})(jQuery);
+  
+
 
 </script>
