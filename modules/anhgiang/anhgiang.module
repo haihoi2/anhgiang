@@ -283,6 +283,8 @@ function anhgiang_block_view($delta = '') {
           $block['content'] = '<ul><li style="display:none"> No message</li></ul>';
         }
         else {
+          $node = node_load($msg);
+          
           switch ($node->type){
             case 'note':
               $type = t('Thông báo');             
