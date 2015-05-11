@@ -161,8 +161,19 @@ function anhgiang_menu() {
     'access callback' => true,
     'type' => MENU_CALLBACK,
   );
+  $items['recent-msg'] = array(
+    'page callback' => 'anhgiang_recent_msg',
+    'access arguments' => array('access content'),
+    'access callback' => true,
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
+}
+function anhgiang_recent_msg() {
+  global $user;
+  variable_set('recent_msg_user_' . $user->uid, '-1');  
+  drupal_goto(url('user/' .$user->uid . '/workbench_access', array('absolute' => true)));
 }
 function anhgiang_page_not_found() {
   return '';
@@ -188,3 +199,106 @@ function anhgiang_get_translated_nids($nids = array(), $language = 'fr') {
   return $tnids; 
 }
  
+ /**
+ * Implements hook_insert().
+ */
+function anhgiang_node_insert($node) {
+  $users = db_select('users', 'u')
+    ->fields('u', array('uid'))
+    ->execute()
+    ->fetchAll();
+  $is_alert = false;
+  switch ($node->type){
+    case 'note':
+      $is_alert = true;
+      break;
+    case 'task':
+      $is_alert = true;
+      break;
+    case 'report':
+      $is_alert = true;
+      break;      
+  }
+  if ($is_alert) {
+    foreach ($users as $user) {
+    
+      $full_user = user_load($user->uid); 
+      $node->workbench_access = $node->field_project_section['und'][0]['tid'];
+      $sids = anhgiang_node_access_records($node);
+      $grants = anhgiang_node_grants($full_user, 'view');   
+      
+      $access = FALSE;
+      if (array_key_exists(ANHGIANG_ACCESS,$grants)) {
+        foreach ($sids as $sid){
+          foreach ($grants[ANHGIANG_ACCESS] as $gid => $gvalue){
+            if ($sid['realm']==ANHGIANG_ACCESS && $sid['gid'] == $gid)
+              $access=true;
+              break;
+          }
+        };
+      }
+      
+      if ($access) {
+        variable_set('recent_msg_user_' . $full_user->uid, $node->nid);
+        watchdog('anhgiang', 'Create recent message for user: '. $full_user->name .'(' . $full_user->uid .') for node nid=' . $node->nid );
+      }
+    }
+  }
+  return '';
+}
+
+ /**
+ * Implements hook_block_info().
+ */
+function anhgiang_block_info() {
+  
+  $blocks['recent_msg'] = array(
+    'info' => t('Recent message for each user'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  return $blocks;
+}
+ /**
+ * Implements hook_block_info().
+ */
+function anhgiang_block_configure($delta = ''){
+  $form = array();
+  if ($delta == 'recent_msg') {
+    
+  }
+  return $form;
+}
+
+function anhgiang_block_view($delta = '') {
+  // This example is adapted from node.module.
+  $block = array();
+  global $user;
+  switch ($delta) {
+    case 'recent_msg':
+      if (user_access('access content')) {
+        $block['subject'] = t('Recent message');
+        $msg = variable_get('recent_msg_user_' . $user->uid, '-1');
+        if ($msg == '-1'){
+          $block['content'] = '<ul><li style="display:none"> No message</li></ul>';
+        }
+        else {
+          switch ($node->type){
+            case 'note':
+              $type = t('Thông báo');             
+              break;
+            case 'task':
+              $type = t('Công việc');              
+              break;
+            case 'report':
+              $type = t('Báo cáo');             
+              break;      
+          }
+          $msg  = t('Có <a href="@url"> ' .  $type .' </a> mới!', array('@url' => url('recent-msg')));
+          $block['content'] = '<ul><li>' . $msg . '</li></ul>';
+        }
+      }
+      break;
+  }
+  return $block;
+}
