@@ -1,0 +1,19 @@
+# Vietnamese translation of Block Refresh (7.x-2.4)
+# Copyright (c) 2015 by the Vietnamese translation team
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Block Refresh (7.x-2.4)\n"
+"POT-Creation-Date: 2015-02-15 09:31+0000\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Language-Team: Vietnamese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "User interface"
+msgstr "Giao diện người dùng"
+msgid "Refresh"
+msgstr "Làm tươi"
+msgid "configure"
+msgstr "cấu hình"

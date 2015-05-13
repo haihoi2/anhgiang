@@ -1,0 +1,25 @@
+diff --git a/workbench_moderation.module b/workbench_moderation.module
+index f510e2e..5c44621 100644
+--- a/workbench_moderation.module
++++ b/workbench_moderation.module
+@@ -701,8 +701,6 @@ function workbench_moderation_node_update($node) {
+   // Apply moderation changes if this is a new revision or if the moderation
+   // state has changed.
+   if (!empty($node->revision) || $node->workbench_moderation_state_current != $node->workbench_moderation_state_new) {
+-    // Update attached fields.
+-    field_attach_update('node', $node);
+     // Moderate the node.
+     workbench_moderation_moderate($node, $node->workbench_moderation_state_new);
+   }
+@@ -1563,7 +1561,10 @@ function workbench_moderation_store($node) {
+     return;
+   }
+   watchdog('Workbench moderation', 'Saved node revision: %node as live version for node %live.', array('%node' => $node->vid, '%live' => $node->nid), WATCHDOG_NOTICE, l($node->title, 'node/' . $node->nid));
+-  $live_revision = workbench_moderation_node_live_load($node);
++  $live_revision_loaded = workbench_moderation_node_live_load($node);
++  $live_revision = clone($live_revision_loaded);
++  $live_revision->original = $live_revision_loaded;
++
+   // Make sure we're published.
+   $live_revision->status = 1;
+   // Don't create a new revision.

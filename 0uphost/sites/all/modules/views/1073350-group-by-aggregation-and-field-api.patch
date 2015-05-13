@@ -1,0 +1,376 @@
+diff --git a/handlers/views_handler_field.inc b/handlers/views_handler_field.inc
+index f47f5ee..9e9effd 100644
+--- a/handlers/views_handler_field.inc
++++ b/handlers/views_handler_field.inc
+@@ -61,7 +61,8 @@ class views_handler_field extends views_handler {
+   function query() {
+     $this->ensure_my_table();
+     // Add the field.
+-    $this->field_alias = $this->query->add_field($this->table_alias, $this->real_field);
++    $params = $this->options['group_type'] != 'group' ? array('function' => $this->options['group_type']) : array();
++    $this->field_alias = $this->query->add_field($this->table_alias, $this->real_field, NULL, $params);
+ 
+     $this->add_additional_fields();
+   }
+@@ -85,6 +86,13 @@ class views_handler_field extends views_handler {
+       $fields = $this->additional_fields;
+     }
+ 
++    $group_params = array();
++    if ($this->options['group_type'] != 'group') {
++      $group_params = array(
++        'function' => $this->options['group_type'],
++      );
++    }
++
+     if (!empty($fields) && is_array($fields)) {
+       foreach ($fields as $identifier => $info) {
+         if (is_array($info)) {
+@@ -106,10 +114,11 @@ class views_handler_field extends views_handler {
+             $params = $info['params'];
+           }
+ 
++          $params += $group_params;
+           $this->aliases[$identifier] = $this->query->add_field($table_alias, $info['field'], NULL, $params);
+         }
+         else {
+-          $this->aliases[$info] = $this->query->add_field($this->table_alias, $info);
++          $this->aliases[$info] = $this->query->add_field($this->table_alias, $info, NULL, $group_params);
+         }
+       }
+     }
+@@ -122,7 +131,8 @@ class views_handler_field extends views_handler {
+     if (isset($this->field_alias)) {
+       // Since fields should always have themselves already added, just
+       // add a sort on the field.
+-      $this->query->add_orderby(NULL, NULL, $order, $this->field_alias);
++      $params = $this->options['group_type'] != 'group' ? array('function' => $this->options['group_type']) : array();
++      $this->query->add_orderby(NULL, NULL, $order, $this->field_alias, $params);
+     }
+   }
+ 
+@@ -1268,6 +1278,10 @@ If you would like to have the characters %5B and %5D please use the html entity
+ 
+     return $themes;
+   }
++
++  function ui_name($short = FALSE) {
++    return $this->get_field(parent::ui_name($short));
++  }
+ }
+ 
+ /**
+diff --git a/handlers/views_handler_field_group_by_numeric.inc b/handlers/views_handler_field_group_by_numeric.inc
+deleted file mode 100644
+index 37ed881..0000000
+--- a/handlers/views_handler_field_group_by_numeric.inc
++++ /dev/null
+@@ -1,75 +0,0 @@
+-<?php
+-
+-/**
+- * Handler for GROUP BY on simple numeric fields.
+- */
+-class views_handler_field_group_by_numeric extends views_handler_field_numeric {
+-  function add_additional_fields($fields = NULL) {
+-    if (!isset($fields)) {
+-      // notice check
+-      if (empty($this->additional_fields)) {
+-        return;
+-      }
+-      $fields = $this->additional_fields;
+-    }
+-    $new_fields = array();
+-
+-    foreach ($fields as $identifier => $info) {
+-      if (!is_array($info)) {
+-        $identifier = $info;
+-        $info = array(
+-          'field' => $identifier,
+-        );
+-      }
+-
+-      $info['params'] = array(
+-        'function' => $this->options['group_type'],
+-      );
+-
+-      $new_fields[$identifier] = $info;
+-    }
+-
+-    if (!empty($new_fields)) {
+-      return parent::add_additional_fields($new_fields);
+-    }
+-  }
+-
+-  function init(&$view, &$options) {
+-    // group by fields are always floats.
+-    $this->definition['float'] = TRUE;
+-    parent::init($view, $options);
+-
+-    // Initialize the original handler.
+-    $this->handler = views_get_handler($options['table'], $options['field'], 'field');
+-    $this->handler->init($view, $options);
+-  }
+-
+-  /**
+-   * Called to add the field to a query.
+-   */
+-  function query() {
+-    $this->ensure_my_table();
+-    // Add the field, taking care of any aggregation that may affect it.
+-    $params = array(
+-      'function' => $this->options['group_type'],
+-    );
+-
+-    $this->field_alias = $this->query->add_field($this->table_alias, $this->real_field, NULL, $params);
+-    $this->add_additional_fields();
+-  }
+-
+-  /**
+-   * Called to determine what to tell the clicksorter.
+-   */
+-  function click_sort($order) {
+-    $params = array(
+-      'function' => $this->options['group_type'],
+-    );
+-
+-    $this->query->add_orderby($this->table, $this->field, $order, $this->field_alias, $params);
+-  }
+-
+-  function ui_name($short = FALSE) {
+-    return $this->get_field(parent::ui_name($short));
+-  }
+-}
+diff --git a/modules/comment.views.inc b/modules/comment.views.inc
+index 4ff62c5..4f64845 100644
+--- a/modules/comment.views.inc
++++ b/modules/comment.views.inc
+@@ -392,9 +392,11 @@ function comment_views_data() {
+     'field' => array(
+       'handler' => 'views_handler_field_ncs_last_comment_name',
+       'click sortable' => TRUE,
++      'no group by' => TRUE,
+     ),
+     'sort' => array(
+       'handler' => 'views_handler_sort_ncs_last_comment_name',
++      'no group by' => TRUE,
+     ),
+   );
+ 
+@@ -424,9 +426,11 @@ function comment_views_data() {
+     'field' => array(
+       'handler' => 'views_handler_field_ncs_last_updated',
+       'click sortable' => TRUE,
++      'no group by' => TRUE,
+     ),
+     'sort' => array(
+       'handler' => 'views_handler_sort_ncs_last_updated',
++      'no group by' => TRUE,
+     ),
+     'filter' => array(
+       'handler' => 'views_handler_filter_ncs_last_updated',
+@@ -497,6 +501,7 @@ function comment_views_data_alter(&$data) {
+       'name table' => 'users',
+       'name field' => 'name',
+       'handler' => 'views_handler_argument_comment_user_uid',
++      'no group by' => TRUE,
+     ),
+     'filter' => array(
+       'field' => 'uid',
+diff --git a/modules/field/views_handler_field_field.inc b/modules/field/views_handler_field_field.inc
+index f6442e0..934396a 100644
+--- a/modules/field/views_handler_field_field.inc
++++ b/modules/field/views_handler_field_field.inc
+@@ -70,9 +70,6 @@ class views_handler_field_field extends views_handler_field {
+    */
+   function access() {
+     $this->get_base_table();
+-    if (!isset($this->definition['entity_tables'][$this->base_table])) {
+-      dsm($this);
+-    }
+     return field_access('view', $this->definition['field_name'], $this->definition['entity_tables'][$this->base_table]);
+   }
+ 
+@@ -160,10 +157,21 @@ class views_handler_field_field extends views_handler_field {
+ 
+     if ($use_groupby) {
+       // Add the fields that we're actually grouping on.
+-      $group_field_name = $this->definition['field_name'] . '_' . $this->options['group_column'];
+-      if (in_array($group_field_name, $fields)) {
+-        $fields = array($group_field_name => $group_field_name) + $this->options['group_columns'];
++      $options = array($this->options['group_column'] => $this->options['group_column']) + $this->options['group_columns'];
++
++      $fields = array();
++      $rkey = $this->definition['is revision'] ? 'FIELD_LOAD_REVISION' : 'FIELD_LOAD_CURRENT';
++      // Go through the list and determine the actual column name from field api.
++      foreach ($options as $column) {
++        $name = $column;
++        if (isset($this->field_info['storage']['details']['sql'][$rkey][$this->table][$column])) {
++          $name = $this->field_info['storage']['details']['sql'][$rkey][$this->table][$column];
++        }
++
++        $fields[$column] = $name;
+       }
++
++      $this->group_fields = $fields;
+     }
+ 
+     // Add additional fields (and the table join itself) if needed.
+@@ -501,12 +509,14 @@ class views_handler_field_field extends views_handler_field {
+     );
+ 
+     $options = drupal_map_assoc(array('bundle', 'language', 'entity_type'), 'ucfirst');
++
++    // Add on defined fields, noting that they're prefixed with the field name.
+     $form['group_columns'] = array(
+       '#type' => 'checkboxes',
+       '#title' => t('Group columns (additional)'),
+       '#default_value' => $this->options['group_columns'],
+       '#description' => t('Select any additional columns of this field to include in the query and to group on.'),
+-      '#options' => $options,
++      '#options' => $options + $group_columns,
+     );
+   }
+ 
+@@ -514,15 +524,9 @@ class views_handler_field_field extends views_handler_field {
+     parent::groupby_form_submit($form, $form_state);
+     $item =& $form_state['handler']->options;
+ 
+-    if ($item['group_type'] != 'group') {
+-      unset($item['group_column']);
+-      unset($item['group_columns']);
+-    }
+-    else {
+-      // Add settings for "field API" fields.
+-      $item['group_column'] = $form_state['values']['options']['group_column'];
+-      $item['group_columns'] = array_filter($form_state['values']['options']['group_columns']);
+-    }
++    // Add settings for "field API" fields.
++    $item['group_column'] = $form_state['values']['options']['group_column'];
++    $item['group_columns'] = array_filter($form_state['values']['options']['group_columns']);
+   }
+ 
+   /**
+@@ -628,8 +632,39 @@ class views_handler_field_field extends views_handler_field {
+ 
+     // Go ahead and render and store in $this->items.
+     $entity = clone $values->_field_data[$this->field_alias]['entity'];
++
+     $entity_type = $values->_field_data[$this->field_alias]['entity_type'];
+     $langcode = $this->field_language($entity_type);
++    // If we are grouping, copy our group fields into the cloned entity.
++    // It's possible this will cause some weirdness, but there's only
++    // so much we can hope to do.
++    if (isset($this->group_fields)) {
++      // first, test to see if we have a base value.
++      $base_value = array();
++      // Note: We would copy original values here, but it can cause problems.
++      // For example, text fields store cached filtered values as
++      // 'safe_value' which doesn't appear anywhere in the field definition
++      // so we can't affect it. Other side effects could happen similarly.
++      $data = FALSE;
++      foreach ($this->group_fields as $field => $column) {
++        if (property_exists($values, $this->aliases[$column])) {
++          $base_value[$field] = $values->{$this->aliases[$column]};
++          if (isset($base_value[$field])) {
++            $data = TRUE;
++          }
++        }
++      }
++
++      // If any of our aggregated fields have data, fake it:
++      if ($data) {
++        // Now, overwrite the original value with our aggregated value.
++        // This overwrites it so there is always just one entry.
++        $entity->{$this->definition['field_name']}[$langcode] = array($base_value);
++      }
++      else {
++        $entity->{$this->definition['field_name']}[$langcode] = array();
++      }
++    }
+ 
+     // The field we are trying to display doesn't exist on this entity.
+     if (!isset($entity->{$this->definition['field_name']})) {
+diff --git a/modules/search.views.inc b/modules/search.views.inc
+index f661c7c..c3e2c44 100644
+--- a/modules/search.views.inc
++++ b/modules/search.views.inc
+@@ -70,10 +70,12 @@ function search_views_data() {
+       'handler' => 'views_handler_field_search_score',
+       'click sortable' => TRUE,
+       'float' => TRUE,
++      'no group by' => TRUE,
+     ),
+     // Information for sorting on a search score.
+     'sort' => array(
+       'handler' => 'views_handler_sort_search_score',
++      'no group by' => TRUE,
+     ),
+   );
+ 
+@@ -120,9 +122,11 @@ function search_views_data() {
+     // Information for searching terms using the full search syntax
+     'filter' => array(
+       'handler' => 'views_handler_filter_search',
++      'no group by' => TRUE,
+     ),
+     'argument' => array(
+       'handler' => 'views_handler_argument_search',
++      'no group by' => TRUE,
+     ),
+   );
+ 
+diff --git a/plugins/views_plugin_query_default.inc b/plugins/views_plugin_query_default.inc
+index c30bb30..714d0b4 100644
+--- a/plugins/views_plugin_query_default.inc
++++ b/plugins/views_plugin_query_default.inc
+@@ -1384,7 +1384,7 @@ class views_plugin_query_default extends views_plugin_query {
+         'method' => 'views_query_default_aggregation_method_simple',
+         'handler' => array(
+           'argument' => 'views_handler_argument_group_by_numeric',
+-          'field' => 'views_handler_field_group_by_numeric',
++          'field' => 'views_handler_field_numeric',
+           'filter' => 'views_handler_filter_group_by_numeric',
+           'sort' => 'views_handler_sort_group_by_numeric',
+         ),
+@@ -1394,7 +1394,7 @@ class views_plugin_query_default extends views_plugin_query {
+         'method' => 'views_query_default_aggregation_method_distinct',
+         'handler' => array(
+           'argument' => 'views_handler_argument_group_by_numeric',
+-          'field' => 'views_handler_field_group_by_numeric',
++          'field' => 'views_handler_field_numeric',
+           'filter' => 'views_handler_filter_group_by_numeric',
+           'sort' => 'views_handler_sort_group_by_numeric',
+         ),
+@@ -1404,7 +1404,6 @@ class views_plugin_query_default extends views_plugin_query {
+         'method' => 'views_query_default_aggregation_method_simple',
+         'handler' => array(
+           'argument' => 'views_handler_argument_group_by_numeric',
+-          'field' => 'views_handler_field_group_by_numeric',
+           'filter' => 'views_handler_filter_group_by_numeric',
+           'sort' => 'views_handler_sort_group_by_numeric',
+         ),
+@@ -1414,7 +1413,6 @@ class views_plugin_query_default extends views_plugin_query {
+         'method' => 'views_query_default_aggregation_method_simple',
+         'handler' => array(
+           'argument' => 'views_handler_argument_group_by_numeric',
+-          'field' => 'views_handler_field_group_by_numeric',
+           'filter' => 'views_handler_filter_group_by_numeric',
+           'sort' => 'views_handler_sort_group_by_numeric',
+         ),
+@@ -1424,7 +1422,6 @@ class views_plugin_query_default extends views_plugin_query {
+         'method' => 'views_query_default_aggregation_method_simple',
+         'handler' => array(
+           'argument' => 'views_handler_argument_group_by_numeric',
+-          'field' => 'views_handler_field_group_by_numeric',
+           'filter' => 'views_handler_filter_group_by_numeric',
+           'sort' => 'views_handler_sort_group_by_numeric',
+         ),
+@@ -1434,7 +1431,6 @@ class views_plugin_query_default extends views_plugin_query {
+         'method' => 'views_query_default_aggregation_method_simple',
+         'handler' => array(
+           'argument' => 'views_handler_argument_group_by_numeric',
+-          'field' => 'views_handler_field_group_by_numeric',
+           'filter' => 'views_handler_filter_group_by_numeric',
+           'sort' => 'views_handler_sort_group_by_numeric',
+         ),

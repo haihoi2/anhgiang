@@ -1,0 +1,79 @@
+diff --git a/admin_menu.inc b/admin_menu.inc
+index 968fe1d..b56a394 100644
+--- a/admin_menu.inc
++++ b/admin_menu.inc
+@@ -385,8 +385,24 @@ function admin_menu_links_menu($tree) {
+       '#options' => $data['link']['localized_options'],
+       '#weight' => $data['link']['weight'],
+     );
++
++    // Recurse to add any child links.
++    $children = array();
+     if ($data['below']) {
+-      $links[$data['link']['href']] += admin_menu_links_menu($data['below']);
++      $children = admin_menu_links_menu($data['below']);
++      $links[$data['link']['href']] += $children;
++    }
++
++    // Handle links pointing to category/overview pages.
++    if ($data['link']['page_callback'] == 'system_admin_menu_block_page' || $data['link']['page_callback'] == 'system_admin_config_page') {
++      // Apply a marker for others to consume.
++      $links[$data['link']['href']]['#is_category'] = TRUE;
++      // Automatically hide empty categories.
++      // Check for empty children first for performance. Only when non-empty
++      // (typically 'admin/config'), check whether children are accessible.
++      if (empty($children) || !element_get_visible_children($children)) {
++        $links[$data['link']['href']]['#access'] = FALSE;
++      }
+     }
+   }
+   return $links;
+diff --git a/tests/admin_menu.test b/tests/admin_menu.test
+index 28dfb1a..714e497 100644
+--- a/tests/admin_menu.test
++++ b/tests/admin_menu.test
+@@ -117,7 +117,7 @@ class AdminMenuPermissionsTestCase extends AdminMenuWebTestCase {
+   public static function getInfo() {
+     return array(
+       'name' => 'Menu link access permissions',
+-      'description' => 'Tests that menu links are displayed according to user permissions.',
++      'description' => 'Tests appearance of menu links depending on user permissions.',
+       'group' => 'Administration menu',
+     );
+   }
+@@ -165,6 +165,35 @@ class AdminMenuPermissionsTestCase extends AdminMenuWebTestCase {
+     $this->assertElementByXPath('//div[@id="admin-menu"]//a[@href=:path]', array(':path' => 'http://drupal.org'), 'Icon » Drupal.org link found.');
+     $this->assertElementByXPath('//div[@id="admin-menu"]//a[contains(@href, :path)]', array(':path' => 'admin/structure/contact'), 'Structure » Contact link found.');
+   }
++
++  /**
++   * Tests handling of links pointing to category/overview pages.
++   */
++  function testCategories() {
++    // Create a user with minimum permissions.
++    $admin_user = $this->drupalCreateUser($this->basePermissions);
++    $this->drupalLogin($admin_user);
++
++    // Verify that no category links appear.
++    $this->assertNoLinkTrailByTitle(array(t('Structure')));
++    $this->assertNoLinkTrailByTitle(array(t('Configuration')));
++
++    // Create a user with access to one configuration category.
++    $permissions = $this->basePermissions + array(
++      'administer users',
++    );
++    $admin_user = $this->drupalCreateUser($permissions);
++    $this->drupalLogin($admin_user);
++
++    // Verify that only expected category links appear.
++    $this->assertNoLinkTrailByTitle(array(t('Structure')));
++    $this->assertLinkTrailByTitle(array(t('People')));
++    $this->assertLinkTrailByTitle(array(t('Configuration')));
++    $this->assertLinkTrailByTitle(array(t('Configuration'), t('People')));
++    // Random picks are sufficient.
++    $this->assertNoLinkTrailByTitle(array(t('Configuration'), t('Media')));
++    $this->assertNoLinkTrailByTitle(array(t('Configuration'), t('System')));
++  }
+ }
+ 
+ /**

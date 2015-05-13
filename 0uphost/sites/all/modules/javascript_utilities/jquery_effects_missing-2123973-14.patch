@@ -1,0 +1,85 @@
+From d84d48b26788a0c3538aecb7fd6789d5580922a1 Mon Sep 17 00:00:00 2001
+From: "Eric J. Duran" <eric.duran7@gmail.com>
+Date: Thu, 3 Apr 2014 15:43:55 -0400
+Subject: [PATCH 1/1] Issue #2123973 by raphaelhuefner, rkallensee, sylus:
+ Failed to open: jquery.effects.*.min.js.
+
+---
+ jquery_update.module | 38 +++++++++++++++++++++++++++++++-------
+ 1 file changed, 31 insertions(+), 7 deletions(-)
+
+diff --git a/jquery_update.module b/jquery_update.module
+index bab3a1b..25523a5 100644
+--- a/jquery_update.module
++++ b/jquery_update.module
+@@ -397,12 +397,10 @@ function jquery_update_jqueryui_replace(&$javascript, $cdn, $path, $min) {
+     'ui.accordion', 'ui.autocomplete', 'ui.button', 'ui.datepicker', 'ui.dialog', 'ui.draggable',
+     'ui.droppable', 'ui.mouse', 'ui.position', 'ui.progressbar', 'ui.resizable', 'ui.selectable',
+     'ui.slider', 'ui.sortable', 'ui.tabs', 'ui.widget', 'ui.spinner', 'ui.menu', 'ui.tooltip',
+-    'effects.blind', 'effects.bounce', 'effects.clip', 'effects.drop', 'effects.explode', 'effects.fade',
+-    'effects.fold', 'effects.highlight', 'effects.pulsate', 'effects.scale', 'effects.shake', 'effects.slide',
+-    'effects.transfer',
+   ));
+   $names['ui'] = 'ui.core';
+-  $names['effects'] = 'ui.effect';
++  $names['effects'] = array('effects.core', 'ui.effect'); // map[library_hook] = array(core_fn, updated_fn)
++  $names = jquery_update_make_library_hook_to_file_name_segment_map_for_effects($names);
+ 
+   switch ($cdn) {
+     case 'google':
+@@ -424,6 +422,30 @@ function jquery_update_jqueryui_replace(&$javascript, $cdn, $path, $min) {
+ }
+ 
+ /**
++ * Create a mapping from system.module library hooks to file name segments.
++ *
++ * @param array $map Optional. If given, append to it.
++ * @return array The keys are library hooks  and the values are each arrays of
++ * 2 file name segments as values. The first file name segment can be used to
++ * reach Drupal core's jQuery UI effect files, and the second file name segment
++ * can be used to construct a path to the equivalent replacement
++ * jQuery UI effect file provided by jquery_update.module.
++ */
++function jquery_update_make_library_hook_to_file_name_segment_map_for_effects($map = array()) {
++  $effect_names = array(
++    'blind', 'bounce', 'clip', 'drop', 'explode', 'fade', 'fold',
++    'highlight', 'pulsate', 'scale', 'shake', 'slide', 'transfer',
++  );
++  foreach ($effect_names as $effect_name) {
++    $library_hook = 'effects.' . $effect_name;
++    $file_name_segment_core = $library_hook; // Yes, for the effect files, this is indeed identical.
++    $file_name_segment_updated = 'ui.effect-' . $effect_name;
++    $map[$library_hook] = array($file_name_segment_core, $file_name_segment_updated);
++  }
++  return $map;
++}
++
++/**
+  * Add the local fallback in case jQuery UI from the CDN is unavailable.
+  *
+  * @param array $javascript
+@@ -467,7 +489,8 @@ function jquery_update_jqueryui_cdn($cdn, &$javascript, $path, $min, $names) {
+   // Construct the jQuery UI path and replace the JavaScript.
+   $jspath = $path . '/replace/ui/ui/' . ($min == '.min' ? 'minified/' : '');
+   foreach ($names as $name => $file) {
+-    $corefile = 'misc/ui/jquery.' . $file . '.min.js';
++    list($file_core, $file_updated) = is_array($file) ? $file : array($file, $file);
++    $corefile = 'misc/ui/jquery.' . $file_core . '.min.js';
+     // Remove the core files.
+     unset($javascript[$name]['js'][$corefile]);
+     $javascript[$name]['version'] = '1.10.2';
+@@ -507,8 +530,9 @@ function jquery_update_jqueryui_local(&$javascript, $path, $min, $names) {
+   // Construct the jQuery UI path and replace the JavaScript.
+   $jspath = $path . '/replace/ui/ui/' . ($min == '.min' ? 'minified/' : '');
+   foreach ($names as $name => $file) {
+-    $corefile = 'misc/ui/jquery.' . $file . '.min.js';
+-    $javascript[$name]['js'][$corefile]['data'] = $jspath . 'jquery.' . $file . $min . '.js';
++    list($file_core, $file_updated) = is_array($file) ? $file : array($file, $file);
++    $corefile = 'misc/ui/jquery.' . $file_core . '.min.js';
++    $javascript[$name]['js'][$corefile]['data'] = $jspath . 'jquery.' . $file_updated . $min . '.js';
+     $javascript[$name]['version'] = '1.10.2';
+   }
+ }
+-- 
+1.8.2.1
+

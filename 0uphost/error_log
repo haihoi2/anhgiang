@@ -1,0 +1,4 @@
+[04-May-2015 21:41:20 Asia/Ho_Chi_Minh] PHP Fatal error:  Allowed memory size of 67108864 bytes exhausted (tried to allocate 79 bytes) in /home/trongnguoi/public_html/anhgiang/includes/menu.inc on line 3673
+[04-May-2015 22:34:27 Asia/Ho_Chi_Minh] PHP Fatal error:  Allowed memory size of 67108864 bytes exhausted (tried to allocate 374043 bytes) in /home/trongnguoi/public_html/anhgiang/includes/database/database.inc on line 2171
+[04-May-2015 23:04:41 Asia/Ho_Chi_Minh] PHP Fatal error:  Allowed memory size of 67108864 bytes exhausted (tried to allocate 88 bytes) in /home/trongnguoi/public_html/anhgiang/includes/menu.inc on line 3774
+[05-May-2015 10:37:48 Asia/Ho_Chi_Minh] PHP Fatal error:  Allowed memory size of 67108864 bytes exhausted (tried to allocate 1372779 bytes) in /home/trongnguoi/public_html/anhgiang/includes/batch.inc on line 535
