@@ -60,7 +60,7 @@
     <div class="tab-content col-md-12">
           <div id="note" class="tab-pane fade in active">
               <div class="note col-md-12">
-                  <div class="column1 col-md-6 col-sm-12">
+                  <div class="column1 col-md-6 col-sm-6 col-sx-12">
                     <h4> 
                       <?php 
                       $options = array('language' => $language, 'default' => t('Thông báo gửi đến'));
@@ -68,13 +68,33 @@
                       print variable_get_value($variable, $options); 
                       ?>
                     </h4>
-                    <?php $view = views_get_view_result('notes_of_project', 'block_alert_user', $term->tid);
-                          $result = count($view);
-                        if ($result) print views_embed_view('notes_of_project', 'block_alert_user', $term->tid);
-                        else print t("Không có thông báo nào");
+                    <?php
+                        $view = views_get_view_result('notes_of_project', 'block_alert_user', $term->tid);
+                        $result = count($view);
+                        $rescount = 0;
+                        if ($result) {
+                            print views_embed_view('notes_of_project', 'block_alert_user', $term->tid);
+                        }
+                        $rescount = $rescount + $result;
+                        
+                        $childs= taxonomy_get_children($term->tid);
+                        
+                                
+                        foreach($childs as $termchild) {
+                            $view = views_get_view_result('notes_of_project', 'block_alert_user', $termchild->tid);
+                            $result = count($view);
+                            $rescount = $rescount + $result;
+                            if ($result) {
+                                print views_embed_view('notes_of_project', 'block_alert_user', $termchild->tid);
+                            }
+                        }
+                        if(!$rescount) {
+                            print t("Không có thông báo nào");
+                        }
+                        
                     ?>
                   </div>
-                  <div class="column2 col-md-6 col-sm-12">
+                  <div class="column2 col-md-6 col-sm-6 col-sx-12">
                     <h4> 
                       <?php           
                         $options = array('language' => $language, 'default' => t('Thông báo của tôi'));
@@ -82,10 +102,28 @@
                         print variable_get_value($variable, $options); 
                       ?>
                     </h4>
-                    <?php $view = views_get_view_result('notes_of_project', 'block', $term->tid);
+                    <?php
+                        $view = views_get_view_result('notes_of_project', 'block', $term->tid);
                         $result = count($view);
-                        if ($result) print views_embed_view('notes_of_project', 'block', $term->tid);
-                        else print t("Không có thông báo nào");          
+                        $rescount = 0;
+                        if ($result) {
+                            print views_embed_view('notes_of_project', 'block', $term->tid);
+                        }
+                        $rescount = $rescount + $result;
+                
+                        $childs= taxonomy_get_children($term->tid);
+
+                        foreach($childs as $termchild) {
+                            $view = views_get_view_result('notes_of_project', 'block', $termchild->tid);
+                            $result = count($view);
+                            $rescount = $rescount + $result;
+                            if ($result) {
+                                print views_embed_view('notes_of_project', 'block', $termchild->tid);
+                            }
+                        }
+                        if(!$rescount) {
+                            print t("Không có thông báo nào");
+                        }
                     ?>
                   </div>
              </div>
@@ -93,7 +131,7 @@
           
           <div id="task" class="tab-pane fade">
               <div class="task col-md-12">
-                  <div class="column1 col-md-6 col-sm-12">
+                  <div class="column1 col-md-6 col-sm-6 col-sx-12">
                     <h4>       
                     <?php           
                         $options = array('language' => $language, 'default' => t('Công việc của tôi'));
@@ -104,11 +142,30 @@
                     <?php    
                         $view = views_get_view_result('tasks_of_project', 'block', $term->tid);
                         $result = count($view);
-                        if ($result) print views_embed_view('tasks_of_project', 'block', $term->tid); 
-                        else print t("Không có công việc nào"); 
+                        $rescount = 0;
+                        if ($result) {
+                            print views_embed_view('tasks_of_project', 'block', $term->tid);
+                        }
+                        
+                        $rescount = $rescount + $result;
+                        
+                        $childs= taxonomy_get_children($term->tid);
+                        
+                        foreach($childs as $termchild) {
+                            $view = views_get_view_result('tasks_of_project', 'block', $termchild->tid);
+                            $result = count($view);
+                            $rescount = $rescount + $result;
+                            if ($result) {
+                                print views_embed_view('tasks_of_project', 'block', $termchild->tid);
+                            }
+                        }
+                        if(!$rescount) {
+                            print t("Không có công việc nào");
+                        }
+                        
                     ?>
                   </div>
-                  <div class="column2 col-md-6 col-sm-12">
+                  <div class="column2 col-md-6 col-sm-6 col-sx-12">
                     <h4> 
                     <?php           
                         $options = array('language' => $language, 'default' => t('Tất cả công việc của dự án'));
@@ -116,10 +173,29 @@
                         print variable_get_value($variable, $options); 
                     ?>
                     </h4>
-                    <?php   $view = views_get_view_result('tasks_of_project', 'block_all_task', $term->tid);
+                    <?php
+                        $view = views_get_view_result('tasks_of_project', 'block_all_task', $term->tid);
                         $result = count($view);
-                        if ($result) print views_embed_view('tasks_of_project', 'block_all_task', $term->tid);  
-                        else print t("Không có công việc nào"); 
+                        $rescount = 0;
+                        if ($result) {
+                            print views_embed_view('tasks_of_project', 'block_all_task', $term->tid);
+                        }
+                        
+                        $rescount = $rescount + $result;
+                        
+                        $childs= taxonomy_get_children($term->tid);
+                        
+                        foreach($childs as $termchild) {
+                            $view = views_get_view_result('tasks_of_project', 'block_all_task', $termchild->tid);
+                            $result = count($view);
+                            $rescount = $rescount + $result;
+                            if ($result) {
+                                print views_embed_view('tasks_of_project', 'block_all_task', $termchild->tid);
+                            }
+                        }
+                        if(!$rescount) {
+                            print t("Không có công việc nào");
+                        }
                     ?>
                   </div>
               </div>
@@ -127,36 +203,76 @@
           
           <div id="report" class="tab-pane fade">
               <div class="report col-md-12">
-                  <div class="column1 col-md-6 col-sm-12">
+                  <div class="column1 col-md-6 col-sm-6 col-sx-12">
                     <h4> <?php print t("Báo cáo tôi tạo"); ?></h4>
-                    <?php    $view = views_get_view_result('tasks_of_project', 'block_user_report', $term->tid);
+                    <?php
+                        $view = views_get_view_result('tasks_of_project', 'block_user_report', $term->tid);
                         $result = count($view);
-                        if ($result) print views_embed_view('tasks_of_project', 'block_user_report', $term->tid); 
-                        else print t("Không có báo cáo nào"); 
+                        $rescount = 0;
+                        if ($result) {
+                            print views_embed_view('tasks_of_project', 'block_user_report', $term->tid);
+                        }
+                        
+                        $rescount = $rescount + $result;
+                        
+                        $childs= taxonomy_get_children($term->tid);
+                        
+                        foreach($childs as $termchild) {
+                            $view = views_get_view_result('tasks_of_project', 'block_user_report', $termchild->tid);
+                            $result = count($view);
+                            $rescount = $rescount + $result;
+                            if ($result) {
+                                print views_embed_view('tasks_of_project', 'block_user_report', $termchild->tid);
+                            }
+                        }
+                        if(!$rescount) {
+                            print t("Không có báo cáo nào");
+                        }
+
                     ?>
                   </div>
-                  <div class="column2 col-md-6 col-sm-12">
+                  <div class="column2 col-md-6 col-sm-6 col-sx-12">
                     <h4> <?php print t("Tất cả báo cáo dự án"); ?></h4>
-                    <?php    $view = views_get_view_result('tasks_of_project', 'block_all_report', $term->tid);
+                    <?php
+                        $view = views_get_view_result('tasks_of_project', 'block_all_report', $term->tid);
                         $result = count($view);
-                        if ($result) print views_embed_view('tasks_of_project', 'block_all_report', $term->tid); 
-                        else print t("Không có báo cáo nào"); 
+                        $rescount = 0;
+                        if ($result) {
+                            print views_embed_view('tasks_of_project', 'block_all_report', $term->tid);
+                        }
+                        
+                        $rescount = $rescount + $result;
+                        
+                        $childs= taxonomy_get_children($term->tid);
+                        
+                        foreach($childs as $termchild) {
+                            $view = views_get_view_result('tasks_of_project', 'block_all_report', $termchild->tid);
+                            $result = count($view);
+                            $rescount = $rescount + $result;
+                            if ($result) {
+                                print views_embed_view('tasks_of_project', 'block_all_report', $termchild->tid);
+                            }
+                        }
+                        if(!$rescount) {
+                            print t("Không có báo cáo nào");
+                        }
                     ?>
                   </div>
              </div>
           </div>
      </div>
     </div> 
-      
+    <div class="clearfix"></div>
       
    
   <?php endif; ?>
-  
-  <div class="project">
-        <?php       
-       		print render($content['description']); 
-        ?>
-  </div>
+
+      <div class="project">
+            <?php       
+                print render($content['description']); 
+            ?>
+      </div>
+
 
 </div>
 
