@@ -288,7 +288,7 @@ function anhgiang_block_view($delta = '') {
             $type = '';
             switch ($node->type){
               case 'note':
-                $node->type = t('Thông báo');             
+                $type = t('Thông báo');             
                 break;
               case 'task':
                 $type = t('Công việc');              
